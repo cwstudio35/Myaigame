@@ -703,7 +703,7 @@
             logDebug(`呼叫API，提示詞長度: ${prompt.length}，API金鑰前8位: ${apiKey.substring(0, 8)}...`);
             
             // 使用Gemini API
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
             const requestBody = {
                 contents: [{
