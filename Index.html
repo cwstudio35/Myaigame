@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI文字遊戲</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft JhengHei', sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #162447;
+        }
+        
+        h1 {
+            color: #4cc9f0;
+            margin-bottom: 20px;
+        }
+        
+        .config-section {
+            background-color: #162447;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a9b7c6;
+            font-weight: bold;
+        }
+        
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #0f3460;
+            border: 1px solid #2d4059;
+            border-radius: 5px;
+            color: #e6e6e6;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #4cc9f0;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        
+        button:hover {
+            background-color: #3aa8d8;
+        }
+        
+        button:disabled {
+            background-color: #2d4059;
+            color: #7a7a7a;
+            cursor: not-allowed;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: #162447;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #0f3460;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background-color: #162447;
+            border-bottom: 3px solid #4cc9f0;
+            color: #4cc9f0;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: #162447;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            min-height: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #0f3460;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .status-item {
+            margin: 5px 10px;
+        }
+        
+        .game-scene {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #0a1931;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .background-image, .character-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .character-image {
+            object-fit: contain;
+            height: 90%;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .story-text {
+            background-color: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            padding: 15px;
+            background-color: #2d4059;
+            border: none;
+            border-radius: 8px;
+            color: #e6e6e6;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+        
+        .option-btn:hover {
+            background-color: #3a506b;
+        }
+        
+        .custom-action {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .custom-action input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .data-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .data-card {
+            background-color: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .event-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            background-color: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .event-title {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .save-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .save-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .success {
+            background-color: #2e8b57;
+            color: white;
+        }
+        
+        .error {
+            background-color: #b22222;
+            color: white;
+        }
+        
+        .loading {
+            color: #4cc9f0;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .debug-panel {
+            background-color: #0a1931;
+            border: 1px solid #2d4059;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .debug-title {
+            color: #4cc9f0;
+            font-weight: bold;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .debug-content {
+            color: #a9b7c6;
+        }
+        
+        .api-key-display {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .api-key-display span {
+            color: #4cc9f0;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 id="game-title">AI文字遊戲</h1>
+    </header>
+    
+    <div class="config-section">
+        <div class="input-group">
+            <label for="title-input">遊戲標題：</label>
+            <input type="text" id="title-input" placeholder="輸入遊戲標題" value="AI文字遊戲">
+        </div>
+        
+        <div class="input-group">
+            <label for="api-key">Gemini API key：</label>
+            <input type="password" id="api-key" placeholder="輸入您的Gemini API金鑰">
+            <button id="test-api-btn">測試API連接</button>
+            <button id="show-api-key" title="顯示/隱藏API金鑰">👁️</button>
+            <span id="api-status" class="status-indicator hidden"></span>
+            <div id="api-key-info" class="api-key-display hidden">
+                當前API金鑰: <span id="api-key-preview"></span>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="character-data">人物資料：</label>
+            <input type="file" id="character-data" accept=".txt">
+            <span id="character-status" class="status-indicator hidden"></span>
+        </div>
+        
+        <div class="input-group">
+            <label for="background-library">背景庫：</label>
+            <input type="file" id="background-library" webkitdirectory directory multiple>
+            <span id="background-status" class="status-indicator hidden"></span>
+        </div>
+        
+        <div class="input-group">
+            <label for="character-library">立繪庫：</label>
+            <input type="file" id="character-library" webkitdirectory directory multiple>
+            <span id="character-library-status" class="status-indicator hidden"></span>
+        </div>
+        
+        <div class="input-group">
+            <label for="load-game">讀檔：</label>
+            <input type="file" id="load-game" accept=".json">
+            <span id="load-status" class="status-indicator hidden"></span>
+        </div>
+        
+        <div class="debug-panel">
+            <div class="debug-title" onclick="toggleDebug()">🔍 調試資訊 (點擊展開/收起)</div>
+            <div class="debug-content" id="debug-content">
+                <div id="debug-log">等待調試資訊...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-container">
+        <div class="tab active" data-tab="story">劇情</div>
+        <div class="tab" data-tab="data">資料</div>
+        <div class="tab" data-tab="events">事件</div>
+        <div class="tab" data-tab="save">存檔</div>
+    </div>
+    
+    <div id="story-tab" class="tab-content active">
+        <div class="status-bar">
+            <div class="status-item">日期：<span id="current-date">2023年10月15日</span></div>
+            <div class="status-item">天氣：<span id="current-weather">晴朗</span></div>
+            <div class="status-item">地點：<span id="current-location">起始之村</span></div>
+            <div class="status-item">人物狀態：<span id="character-condition">正常</span></div>
+        </div>
+        
+        <div class="game-scene">
+            <img id="background-image" class="background-image" src="" alt="背景">
+            <img id="character-image" class="character-image" src="" alt="立繪">
+        </div>
+        
+        <div class="story-text" id="story-text">
+            <p>歡迎來到AI文字遊戲！請先設定API金鑰和載入必要資料，然後開始遊戲。</p>
+        </div>
+        
+        <div class="options-container" id="options-container">
+            <!-- 選項將由JavaScript動態生成 -->
+        </div>
+        
+        <div class="custom-action">
+            <input type="text" id="custom-action-input" placeholder="輸入自定義行動...">
+            <button id="submit-custom-action">確認</button>
+        </div>
+    </div>
+    
+    <div id="data-tab" class="tab-content">
+        <h2>人物資料</h2>
+        <div class="data-section">
+            <div class="data-card">
+                <h3>基本資料</h3>
+                <div id="character-basic-data">
+                    <p>姓名：<span id="char-name">未載入</span></p>
+                    <p>年齡：<span id="char-age">未載入</span></p>
+                    <p>性格：<span id="char-personality">未載入</span></p>
+                    <p>簡介：<span id="char-description">未載入</span></p>
+                </div>
+            </div>
+            
+            <div class="data-card">
+                <h3>人物狀態</h3>
+                <div id="character-status-data">
+                    <p>好感度：<span id="char-favor">50</span></p>
+                    <p>心情：<span id="char-mood">普通</span></p>
+                    <p>體力：<span id="char-energy">80</span></p>
+                    <p>精神：<span id="char-spirit">70</span></p>
+                    <p>內心想法：<span id="char-thoughts">...</span></p>
+                </div>
+            </div>
+            
+            <div class="data-card">
+                <h3>玩家資料</h3>
+                <div id="player-data">
+                    <p>玩家名稱：<input type="text" id="player-name" placeholder="輸入玩家名稱"></p>
+                    <p>角色設定：<textarea id="player-setting" placeholder="輸入玩家在劇情中的設定" rows="4"></textarea></p>
+                    <button id="save-player-data">儲存玩家資料</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="events-tab" class="tab-content">
+        <h2>事件記錄</h2>
+        <div class="event-list" id="event-list">
+            <!-- 事件將由JavaScript動態生成 -->
+            <div class="event-item">
+                <div class="event-title">遊戲開始</div>
+                <p>歡迎來到AI文字遊戲！系統已初始化，等待玩家開始遊戲。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="save-tab" class="tab-content">
+        <div class="save-section">
+            <h2>遊戲存檔</h2>
+            <p>點擊下方按鈕儲存目前的遊戲進度</p>
+            <button class="save-btn" id="save-game-btn">儲存遊戲</button>
+            <div id="save-status" class="status-indicator hidden" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態變數
+        let gameState = {
+            title: "AI文字遊戲",
+            apiKey: "",
+            apiConnected: false,
+            date: { year: 2023, month: 10, day: 15 },
+            weather: "晴朗",
+            location: "起始之村",
+            characterCondition: "正常",
+            backgroundImages: [],
+            characterImages: [],
+            characterData: null,
+            playerData: {
+                name: "",
+                setting: ""
+            },
+            characterStatus: {
+                favor: 50,
+                mood: "普通",
+                energy: 80,
+                spirit: 70,
+                thoughts: "等待遊戲開始..."
+            },
+            story: "歡迎來到AI文字遊戲！請先設定API金鑰和載入必要資料，然後開始遊戲。",
+            options: ["開始遊戲", "載入範例資料", "查看教學", "關於遊戲"],
+            events: [
+                {
+                    title: "遊戲開始",
+                    content: "歡迎來到AI文字遊戲！系統已初始化，等待玩家開始遊戲。",
+                    timestamp: "2023-10-15 10:00:00"
+                }
+            ],
+            currentBackground: "",
+            currentCharacterImage: ""
+        };
+
+        // DOM元素
+        const titleInput = document.getElementById('title-input');
+        const apiKeyInput = document.getElementById('api-key');
+        const testApiBtn = document.getElementById('test-api-btn');
+        const showApiKeyBtn = document.getElementById('show-api-key');
+        const apiStatus = document.getElementById('api-status');
+        const apiKeyInfo = document.getElementById('api-key-info');
+        const apiKeyPreview = document.getElementById('api-key-preview');
+        const characterDataInput = document.getElementById('character-data');
+        const characterStatus = document.getElementById('character-status');
+        const backgroundLibraryInput = document.getElementById('background-library');
+        const backgroundStatus = document.getElementById('background-status');
+        const characterLibraryInput = document.getElementById('character-library');
+        const characterLibraryStatus = document.getElementById('character-library-status');
+        const loadGameInput = document.getElementById('load-game');
+        const loadStatus = document.getElementById('load-status');
+        const debugContent = document.getElementById('debug-content');
+        const debugLog = document.getElementById('debug-log');
+        
+        // 標籤切換
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // 劇情頁元素
+        const currentDate = document.getElementById('current-date');
+        const currentWeather = document.getElementById('current-weather');
+        const currentLocation = document.getElementById('current-location');
+        const characterCondition = document.getElementById('character-condition');
+        const backgroundImage = document.getElementById('background-image');
+        const characterImage = document.getElementById('character-image');
+        const storyText = document.getElementById('story-text');
+        const optionsContainer = document.getElementById('options-container');
+        const customActionInput = document.getElementById('custom-action-input');
+        const submitCustomAction = document.getElementById('submit-custom-action');
+        
+        // 資料頁元素
+        const charName = document.getElementById('char-name');
+        const charAge = document.getElementById('char-age');
+        const charPersonality = document.getElementById('char-personality');
+        const charDescription = document.getElementById('char-description');
+        const charFavor = document.getElementById('char-favor');
+        const charMood = document.getElementById('char-mood');
+        const charEnergy = document.getElementById('char-energy');
+        const charSpirit = document.getElementById('char-spirit');
+        const charThoughts = document.getElementById('char-thoughts');
+        const playerName = document.getElementById('player-name');
+        const playerSetting = document.getElementById('player-setting');
+        const savePlayerDataBtn = document.getElementById('save-player-data');
+        
+        // 事件頁元素
+        const eventList = document.getElementById('event-list');
+        
+        // 存檔頁元素
+        const saveGameBtn = document.getElementById('save-game-btn');
+        const saveStatus = document.getElementById('save-status');
+
+        // 初始化遊戲
+        function initGame() {
+            logDebug("遊戲初始化開始");
+            
+            // 從localStorage載入已儲存的API金鑰
+            const savedApiKey = localStorage.getItem('gemini_api_key');
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+                gameState.apiKey = savedApiKey;
+                logDebug(`從localStorage載入API金鑰: ${savedApiKey.substring(0, 8)}...`);
+            }
+            
+            // 設置標題
+            titleInput.addEventListener('change', updateTitle);
+            
+            // API測試
+            testApiBtn.addEventListener('click', testApiConnection);
+            
+            // 顯示/隱藏API金鑰
+            showApiKeyBtn.addEventListener('click', toggleApiKeyVisibility);
+            
+            // 檔案載入
+            characterDataInput.addEventListener('change', loadCharacterData);
+            backgroundLibraryInput.addEventListener('change', loadBackgroundLibrary);
+            characterLibraryInput.addEventListener('change', loadCharacterLibrary);
+            loadGameInput.addEventListener('change', loadGameFile);
+            
+            // 標籤切換
+            tabs.forEach(tab => {
+                tab.addEventListener('click', switchTab);
+            });
+            
+            // 選項點擊
+            optionsContainer.addEventListener('click', handleOptionClick);
+            
+            // 自定義行動
+            submitCustomAction.addEventListener('click', handleCustomAction);
+            
+            // 儲存玩家資料
+            savePlayerDataBtn.addEventListener('click', savePlayerData);
+            
+            // 儲存遊戲
+            saveGameBtn.addEventListener('click', saveGame);
+            
+            // 更新顯示
+            updateDisplay();
+            
+            // 初始化選項
+            generateOptions();
+            
+            logDebug("遊戲初始化完成");
+        }
+
+        // 更新遊戲標題
+        function updateTitle() {
+            gameState.title = titleInput.value;
+            document.getElementById('game-title').textContent = gameState.title;
+            logDebug(`標題更新為: ${gameState.title}`);
+        }
+
+        // 切換API金鑰可見性
+        function toggleApiKeyVisibility() {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                showApiKeyBtn.textContent = '🙈';
+                showApiKeyBtn.title = '隱藏API金鑰';
+            } else {
+                apiKeyInput.type = 'password';
+                showApiKeyBtn.textContent = '👁️';
+                showApiKeyBtn.title = '顯示API金鑰';
+            }
+        }
+
+        // 測試API連接
+        async function testApiConnection() {
+            const apiKey = apiKeyInput.value.trim();
+            
+            logDebug(`測試API連接，輸入的API金鑰長度: ${apiKey.length}`);
+            
+            if (!apiKey) {
+                showStatus(apiStatus, "請輸入API金鑰", "error");
+                logDebug("API金鑰為空");
+                return;
+            }
+            
+            // 檢查API金鑰格式
+            if (!apiKey.startsWith('AIza')) {
+                showStatus(apiStatus, "API金鑰格式不正確，應以AIza開頭", "error");
+                logDebug(`API金鑰格式錯誤，開頭: ${apiKey.substring(0, 4)}`);
+                return;
+            }
+            
+            gameState.apiKey = apiKey;
+            
+            // 儲存到localStorage
+            localStorage.setItem('gemini_api_key', apiKey);
+            
+            showStatus(apiStatus, "測試連接中...", "loading");
+            
+            // 更新API金鑰顯示
+            apiKeyPreview.textContent = `${apiKey.substring(0, 10)}...`;
+            apiKeyInfo.classList.remove('hidden');
+            
+            logDebug(`API金鑰已儲存: ${apiKey.substring(0, 8)}...`);
+            
+            try {
+                logDebug("開始呼叫Gemini API...");
+                
+                // 測試Gemini API連接
+                const response = await callGeminiAPI("Hello", apiKey);
+                
+                logDebug(`API回應狀態: ${response ? '成功' : '失敗'}`);
+                
+                if (response && response.candidates && response.candidates.length > 0) {
+                    const responseText = response.candidates[0].content.parts[0].text;
+                    gameState.apiConnected = true;
+                    showStatus(apiStatus, "連接成功", "success");
+                    logDebug(`API連接成功，回應長度: ${responseText.length} 字元`);
+                    
+                    // 更新遊戲狀態
+                    gameState.story = "API連接成功！現在可以開始遊戲了。";
+                    gameState.options = ["開始冒險", "查看角色資料", "探索世界", "自定義行動"];
+                    updateDisplay();
+                    generateOptions();
+                    
+                    // 添加事件記錄
+                    addEvent("API連接成功", "成功連接到Gemini API，遊戲功能已啟用。");
+                    
+                    logDebug("遊戲狀態已更新，API連接成功");
+                } else {
+                    throw new Error("API回應無效，未找到candidates");
+                }
+            } catch (error) {
+                console.error("API連接失敗:", error);
+                gameState.apiConnected = false;
+                showStatus(apiStatus, "連接失敗", "error");
+                showStatus(apiStatus, `連接失敗: ${error.message}`, "error");
+                logDebug(`API連接失敗: ${error.message}`);
+            }
+        }
+
+        // 呼叫Gemini API
+        async function callGeminiAPI(prompt, apiKey) {
+            if (!apiKey) {
+                logDebug("呼叫API失敗: API金鑰為空");
+                throw new Error("API金鑰為空");
+            }
+            
+            logDebug(`呼叫API，提示詞長度: ${prompt.length}，API金鑰前8位: ${apiKey.substring(0, 8)}...`);
+            
+            // 使用Gemini API
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+            
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            };
+            
+            logDebug(`API URL: ${apiUrl.substring(0, 50)}...`);
+            logDebug(`請求體: ${JSON.stringify(requestBody).substring(0, 100)}...`);
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const endTime = Date.now();
+                logDebug(`API請求耗時: ${endTime - startTime}ms`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    logDebug(`API錯誤回應: ${response.status} - ${errorText.substring(0, 200)}`);
+                    throw new Error(`API錯誤: ${response.status} - ${errorText.substring(0, 100)}`);
+                }
+                
+                const responseData = await response.json();
+                logDebug(`API成功回應，資料類型: ${typeof responseData}`);
+                
+                return responseData;
+            } catch (error) {
+                logDebug(`呼叫API失敗: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // 載入人物資料
+        function loadCharacterData(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                logDebug("未選擇人物資料檔案");
+                return;
+            }
+            
+            logDebug(`載入人物資料檔案: ${file.name}, 大小: ${file.size} 位元組`);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    logDebug(`人物資料檔案內容長度: ${content.length} 字元`);
+                    
+                    // 解析人物資料
+                    const lines = content.split('\n');
+                    const character = {};
+                    
+                    lines.forEach(line => {
+                        const parts = line.split(':');
+                        if (parts.length >= 2) {
+                            const key = parts[0].trim();
+                            const value = parts.slice(1).join(':').trim();
+                            character[key] = value;
+                            logDebug(`解析到人物資料: ${key} = ${value.substring(0, 30)}...`);
+                        }
+                    });
+                    
+                    gameState.characterData = character;
+                    showStatus(characterStatus, "人物資料已更新", "success");
+                    logDebug(`人物資料已載入，共有 ${Object.keys(character).length} 個屬性`);
+                    
+                    // 更新顯示
+                    if (character.姓名) charName.textContent = character.姓名;
+                    if (character.年齡) charAge.textContent = character.年齡;
+                    if (character.性格) charPersonality.textContent = character.性格;
+                    if (character.簡介) charDescription.textContent = character.簡介;
+                    
+                    // 添加事件記錄
+                    addEvent("載入人物資料", `已載入人物資料: ${character.姓名 || "未知人物"}`);
+                    
+                } catch (error) {
+                    console.error("讀取人物資料失敗:", error);
+                    showStatus(characterStatus, "讀取失敗", "error");
+                    logDebug(`讀取人物資料失敗: ${error.message}`);
+                }
+            };
+            
+            reader.onerror = function(e) {
+                logDebug(`檔案讀取錯誤: ${e.target.error}`);
+                showStatus(characterStatus, "檔案讀取錯誤", "error");
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 載入背景庫
+        function loadBackgroundLibrary(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
+                logDebug("未選擇背景庫檔案");
+                return;
+            }
+            
+            logDebug(`載入背景庫，檔案數量: ${files.length}`);
+            
+            gameState.backgroundImages = [];
+            
+            // 過濾圖像檔案
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const url = URL.createObjectURL(file);
+                    gameState.backgroundImages.push({
+                        name: file.name,
+                        url: url,
+                        type: file.type,
+                        size: file.size
+                    });
+                    logDebug(`載入背景圖: ${file.name}, 類型: ${file.type}, 大小: ${file.size} 位元組`);
+                }
+            }
+            
+            if (gameState.backgroundImages.length > 0) {
+                showStatus(backgroundStatus, `讀取成功 (${gameState.backgroundImages.length}個背景)`, "success");
+                logDebug(`背景庫載入成功，共 ${gameState.backgroundImages.length} 個背景圖片`);
+                
+                // 自動設置第一個背景
+                if (gameState.backgroundImages.length > 0) {
+                    gameState.currentBackground = gameState.backgroundImages[0].url;
+                    backgroundImage.src = gameState.currentBackground;
+                    logDebug(`設置當前背景: ${gameState.backgroundImages[0].name}`);
+                }
+                
+                // 添加事件記錄
+                addEvent("載入背景庫", `已載入${gameState.backgroundImages.length}個背景圖片`);
+            } else {
+                showStatus(backgroundStatus, "未找到圖檔", "error");
+                logDebug("背景庫中未找到有效的圖片檔案");
+            }
+        }
+
+        // 載入立繪庫
+        function loadCharacterLibrary(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) {
+                logDebug("未選擇立繪庫檔案");
+                return;
+            }
+            
+            logDebug(`載入立繪庫，檔案數量: ${files.length}`);
+            
+            gameState.characterImages = [];
+            
+            // 過濾圖像檔案
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('image/')) {
+                    const url = URL.createObjectURL(file);
+                    gameState.characterImages.push({
+                        name: file.name,
+                        url: url,
+                        type: file.type,
+                        size: file.size
+                    });
+                    logDebug(`載入立繪圖: ${file.name}, 類型: ${file.type}, 大小: ${file.size} 位元組`);
+                }
+            }
+            
+            if (gameState.characterImages.length > 0) {
+                showStatus(characterLibraryStatus, `讀取成功 (${gameState.characterImages.length}個立繪)`, "success");
+                logDebug(`立繪庫載入成功，共 ${gameState.characterImages.length} 個立繪圖片`);
+                
+                // 自動設置第一個立繪
+                if (gameState.characterImages.length > 0) {
+                    gameState.currentCharacterImage = gameState.characterImages[0].url;
+                    characterImage.src = gameState.currentCharacterImage;
+                    logDebug(`設置當前立繪: ${gameState.characterImages[0].name}`);
+                }
+                
+                // 添加事件記錄
+                addEvent("載入立繪庫", `已載入${gameState.characterImages.length}個立繪圖片`);
+            } else {
+                showStatus(characterLibraryStatus, "未找到圖檔", "error");
+                logDebug("立繪庫中未找到有效的圖片檔案");
+            }
+        }
+
+        // 載入遊戲檔案
+        function loadGameFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                logDebug("未選擇遊戲存檔檔案");
+                return;
+            }
+            
+            logDebug(`載入遊戲存檔: ${file.name}, 大小: ${file.size} 位元組`);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    logDebug(`遊戲存檔解析成功，標題: ${data.title || '無標題'}`);
+                    
+                    // 確認是有效的遊戲存檔
+                    if (data.title && data.date) {
+                        // 詢問用戶是否載入
+                        if (confirm("是否載入此存檔？這將覆蓋目前的遊戲進度。")) {
+                            // 載入遊戲狀態
+                            Object.assign(gameState, data);
+                            
+                            // 更新UI
+                            updateDisplay();
+                            generateOptions();
+                            
+                            showStatus(loadStatus, "讀檔成功", "success");
+                            logDebug("遊戲存檔載入成功");
+                            
+                            // 添加事件記錄
+                            addEvent("載入遊戲存檔", `已載入存檔: ${data.title}`);
+                        }
+                    } else {
+                        throw new Error("無效的存檔格式");
+                    }
+                } catch (error) {
+                    console.error("讀取存檔失敗:", error);
+                    showStatus(loadStatus, "讀取失敗", "error");
+                    logDebug(`讀取存檔失敗: ${error.message}`);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 切換標籤頁
+        function switchTab(event) {
+            const tabId = event.target.getAttribute('data-tab');
+            logDebug(`切換到標籤頁: ${tabId}`);
+            
+            // 更新標籤狀態
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新內容顯示
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        }
+
+        // 更新顯示
+        function updateDisplay() {
+            logDebug("更新遊戲顯示");
+            
+            // 更新標題
+            document.getElementById('game-title').textContent = gameState.title;
+            titleInput.value = gameState.title;
+            
+            // 更新狀態欄
+            currentDate.textContent = `${gameState.date.year}年${gameState.date.month}月${gameState.date.day}日`;
+            currentWeather.textContent = gameState.weather;
+            currentLocation.textContent = gameState.location;
+            characterCondition.textContent = gameState.characterCondition;
+            
+            // 更新背景和立繪
+            if (gameState.currentBackground) {
+                backgroundImage.src = gameState.currentBackground;
+                logDebug(`設置背景圖: ${gameState.currentBackground.substring(0, 50)}...`);
+            } else {
+                backgroundImage.src = "";
+            }
+            
+            if (gameState.currentCharacterImage) {
+                characterImage.src = gameState.currentCharacterImage;
+                logDebug(`設置立繪圖: ${gameState.currentCharacterImage.substring(0, 50)}...`);
+            } else {
+                characterImage.src = "";
+            }
+            
+            // 更新劇情文本
+            storyText.innerHTML = `<p>${gameState.story}</p>`;
+            
+            // 更新人物資料
+            if (gameState.characterData) {
+                charName.textContent = gameState.characterData.姓名 || "未載入";
+                charAge.textContent = gameState.characterData.年齡 || "未載入";
+                charPersonality.textContent = gameState.characterData.性格 || "未載入";
+                charDescription.textContent = gameState.characterData.簡介 || "未載入";
+            }
+            
+            // 更新人物狀態
+            charFavor.textContent = gameState.characterStatus.favor;
+            charMood.textContent = gameState.characterStatus.mood;
+            charEnergy.textContent = gameState.characterStatus.energy;
+            charSpirit.textContent = gameState.characterStatus.spirit;
+            charThoughts.textContent = gameState.characterStatus.thoughts;
+            
+            // 更新玩家資料
+            playerName.value = gameState.playerData.name;
+            playerSetting.value = gameState.playerData.setting;
+            
+            // 更新事件列表
+            updateEventList();
+        }
+
+        // 生成選項
+        function generateOptions() {
+            optionsContainer.innerHTML = "";
+            logDebug(`生成 ${gameState.options.length} 個選項`);
+            
+            gameState.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = `${index + 1}. ${option}`;
+                button.setAttribute('data-option', index);
+                optionsContainer.appendChild(button);
+                logDebug(`選項 ${index + 1}: ${option}`);
+            });
+        }
+
+        // 處理選項點擊
+        async function handleOptionClick(event) {
+            if (!event.target.classList.contains('option-btn')) return;
+            
+            logDebug("選項被點擊");
+            
+            if (!gameState.apiConnected) {
+                storyText.innerHTML = "<p>請先設定並測試API金鑰連接。</p>";
+                logDebug("API未連接，無法處理選項");
+                return;
+            }
+            
+            const optionIndex = parseInt(event.target.getAttribute('data-option'));
+            const selectedOption = gameState.options[optionIndex];
+            
+            logDebug(`選擇的選項: ${selectedOption} (索引: ${optionIndex})`);
+            
+            // 顯示載入中
+            storyText.innerHTML = "<p class='loading'>AI思考中...</p>";
+            
+            try {
+                // 呼叫API生成劇情
+                const prompt = createPrompt(selectedOption);
+                logDebug(`生成提示詞，長度: ${prompt.length}`);
+                
+                const response = await callGeminiAPI(prompt, gameState.apiKey);
+                
+                if (response && response.candidates && response.candidates.length > 0) {
+                    const text = response.candidates[0].content.parts[0].text;
+                    logDebug(`API回應，長度: ${text.length} 字元`);
+                    
+                    // 解析API回應
+                    const parsedResult = parseAPIResponse(text);
+                    logDebug(`解析API回應，劇情長度: ${parsedResult.story.length} 字元`);
+                    
+                    // 更新遊戲狀態
+                    updateGameState(parsedResult, selectedOption);
+                    
+                    // 更新顯示
+                    updateDisplay();
+                    generateOptions();
+                    
+                    // 添加事件記錄
+                    addEvent(`選擇: ${selectedOption}`, parsedResult.story.substring(0, 100) + "...");
+                    
+                    logDebug("選項處理完成");
+                } else {
+                    throw new Error("API未返回有效回應");
+                }
+            } catch (error) {
+                console.error("處理選項時出錯:", error);
+                storyText.innerHTML = `<p>錯誤: ${error.message}</p>`;
+                logDebug(`處理選項時出錯: ${error.message}`);
+            }
+        }
+
+        // 處理自定義行動
+        async function handleCustomAction() {
+            const action = customActionInput.value.trim();
+            if (!action) {
+                logDebug("自定義行動為空");
+                return;
+            }
+            
+            logDebug(`自定義行動: ${action}`);
+            
+            if (!gameState.apiConnected) {
+                storyText.innerHTML = "<p>請先設定並測試API金鑰連接。</p>";
+                logDebug("API未連接，無法處理自定義行動");
+                return;
+            }
+            
+            // 顯示載入中
+            storyText.innerHTML = "<p class='loading'>AI思考中...</p>";
+            
+            try {
+                // 呼叫API生成劇情
+                const prompt = createPrompt(action, true);
+                logDebug(`生成自定義行動提示詞，長度: ${prompt.length}`);
+                
+                const response = await callGeminiAPI(prompt, gameState.apiKey);
+                
+                if (response && response.candidates && response.candidates.length > 0) {
+                    const text = response.candidates[0].content.parts[0].text;
+                    logDebug(`API回應，長度: ${text.length} 字元`);
+                    
+                    // 解析API回應
+                    const parsedResult = parseAPIResponse(text);
+                    logDebug(`解析API回應，劇情長度: ${parsedResult.story.length} 字元`);
+                    
+                    // 更新遊戲狀態
+                    updateGameState(parsedResult, action);
+                    
+                    // 更新顯示
+                    updateDisplay();
+                    generateOptions();
+                    
+                    // 清空輸入框
+                    customActionInput.value = "";
+                    
+                    // 添加事件記錄
+                    addEvent(`自定義行動: ${action}`, parsedResult.story.substring(0, 100) + "...");
+                    
+                    logDebug("自定義行動處理完成");
+                } else {
+                    throw new Error("API未返回有效回應");
+                }
+            } catch (error) {
+                console.error("處理自定義行動時出錯:", error);
+                storyText.innerHTML = `<p>錯誤: ${error.message}</p>`;
+                logDebug(`處理自定義行動時出錯: ${error.message}`);
+            }
+        }
+
+        // 創建API提示詞
+        function createPrompt(action, isCustom = false) {
+            const characterInfo = gameState.characterData ? 
+                `人物: ${gameState.characterData.姓名 || "未知"}, 年齡: ${gameState.characterData.年齡 || "未知"}, 性格: ${gameState.characterData.性格 || "未知"}` : 
+                "人物: 未定義";
+                
+            const statusInfo = `好感度: ${gameState.characterStatus.favor}, 心情: ${gameState.characterStatus.mood}, 體力: ${gameState.characterStatus.energy}, 精神: ${gameState.characterStatus.spirit}`;
+            
+            const locationInfo = `時間: ${gameState.date.year}年${gameState.date.month}月${gameState.date.day}日, 天氣: ${gameState.weather}, 地點: ${gameState.location}`;
+            
+            const prompt = `你是一個文字遊戲AI，負責生成遊戲劇情和回應。
+            
+            當前遊戲狀態:
+            ${locationInfo}
+            ${characterInfo}
+            人物狀態: ${statusInfo}
+            玩家選擇: ${action}
+            
+            請生成遊戲劇情和更新遊戲狀態。請以以下格式回應:
+            
+            劇情: [生成的劇情文本，200-300字]
+            選項1: [選項文本]
+            選項2: [選項文本]
+            選項3: [選項文本]
+            選項4: [選項文本]
+            更新日期: [YYYY-MM-DD 或 保持不變]
+            更新天氣: [新天氣 或 保持不變]
+            更新地點: [新地點 或 保持不變]
+            更新人物狀態: [新狀態 或 保持不變]
+            更新好感度: [+/-數值 或 保持不變]
+            更新心情: [新心情 或 保持不變]
+            更新體力: [+/-數值 或 保持不變]
+            更新精神: [+/-數值 或 保持不變]
+            更新內心想法: [新的內心想法]`;
+            
+            return prompt;
+        }
+
+        // 解析API回應
+        function parseAPIResponse(text) {
+            logDebug(`開始解析API回應，文本長度: ${text.length}`);
+            
+            const result = {
+                story: "",
+                options: [],
+                date: "保持不變",
+                weather: "保持不變",
+                location: "保持不變",
+                characterCondition: "保持不變",
+                favor: "保持不變",
+                mood: "保持不變",
+                energy: "保持不變",
+                spirit: "保持不變",
+                thoughts: ""
+            };
+            
+            const lines = text.split('\n');
+            logDebug(`API回應行數: ${lines.length}`);
+            
+            let currentKey = "";
+            
+            lines.forEach(line => {
+                if (line.startsWith("劇情:")) {
+                    result.story = line.substring(3).trim();
+                    currentKey = "story";
+                    logDebug(`找到劇情: ${result.story.substring(0, 50)}...`);
+                } else if (line.startsWith("選項1:")) {
+                    result.options[0] = line.substring(4).trim();
+                    logDebug(`選項1: ${result.options[0]}`);
+                } else if (line.startsWith("選項2:")) {
+                    result.options[1] = line.substring(4).trim();
+                    logDebug(`選項2: ${result.options[1]}`);
+                } else if (line.startsWith("選項3:")) {
+                    result.options[2] = line.substring(4).trim();
+                    logDebug(`選項3: ${result.options[2]}`);
+                } else if (line.startsWith("選項4:")) {
+                    result.options[3] = line.substring(4).trim();
+                    logDebug(`選項4: ${result.options[3]}`);
+                } else if (line.startsWith("更新日期:")) {
+                    result.date = line.substring(5).trim();
+                    logDebug(`更新日期: ${result.date}`);
+                } else if (line.startsWith("更新天氣:")) {
+                    result.weather = line.substring(5).trim();
+                    logDebug(`更新天氣: ${result.weather}`);
+                } else if (line.startsWith("更新地點:")) {
+                    result.location = line.substring(5).trim();
+                    logDebug(`更新地點: ${result.location}`);
+                } else if (line.startsWith("更新人物狀態:")) {
+                    result.characterCondition = line.substring(7).trim();
+                    logDebug(`更新人物狀態: ${result.characterCondition}`);
+                } else if (line.startsWith("更新好感度:")) {
+                    result.favor = line.substring(6).trim();
+                    logDebug(`更新好感度: ${result.favor}`);
+                } else if (line.startsWith("更新心情:")) {
+                    result.mood = line.substring(5).trim();
+                    logDebug(`更新心情: ${result.mood}`);
+                } else if (line.startsWith("更新體力:")) {
+                    result.energy = line.substring(5).trim();
+                    logDebug(`更新體力: ${result.energy}`);
+                } else if (line.startsWith("更新精神:")) {
+                    result.spirit = line.substring(5).trim();
+                    logDebug(`更新精神: ${result.spirit}`);
+                } else if (line.startsWith("更新內心想法:")) {
+                    result.thoughts = line.substring(7).trim();
+                    logDebug(`更新內心想法: ${result.thoughts}`);
+                } else if (currentKey === "story" && line.trim()) {
+                    result.story += "\n" + line;
+                }
+            });
+            
+            return result;
+        }
+
+        // 更新遊戲狀態
+        function updateGameState(parsedResult, action) {
+            logDebug(`更新遊戲狀態，動作: ${action}`);
+            
+            // 更新劇情
+            gameState.story = parsedResult.story;
+            logDebug(`劇情更新，長度: ${gameState.story.length}`);
+            
+            // 更新選項
+            gameState.options = parsedResult.options.filter(opt => opt && opt.trim() !== "");
+            logDebug(`選項更新，數量: ${gameState.options.length}`);
+            
+            // 更新日期
+            if (parsedResult.date !== "保持不變") {
+                // 簡單處理日期更新，實際可更複雜
+                gameState.date.day += 1;
+                if (gameState.date.day > 30) {
+                    gameState.date.day = 1;
+                    gameState.date.month += 1;
+                    if (gameState.date.month > 12) {
+                        gameState.date.month = 1;
+                        gameState.date.year += 1;
+                    }
+                }
+                logDebug(`日期更新為: ${gameState.date.year}年${gameState.date.month}月${gameState.date.day}日`);
+            }
+            
+            // 更新天氣
+            if (parsedResult.weather !== "保持不變") {
+                gameState.weather = parsedResult.weather;
+                logDebug(`天氣更新為: ${gameState.weather}`);
+            }
+            
+            // 更新地點
+            if (parsedResult.location !== "保持不變") {
+                gameState.location = parsedResult.location;
+                logDebug(`地點更新為: ${gameState.location}`);
+            }
+            
+            // 更新人物狀態
+            if (parsedResult.characterCondition !== "保持不變") {
+                gameState.characterCondition = parsedResult.characterCondition;
+                logDebug(`人物狀態更新為: ${gameState.characterCondition}`);
+            }
+            
+            // 更新好感度
+            if (parsedResult.favor !== "保持不變") {
+                if (parsedResult.favor.startsWith("+")) {
+                    gameState.characterStatus.favor += parseInt(parsedResult.favor.substring(1));
+                    logDebug(`好感度增加: ${parsedResult.favor.substring(1)}`);
+                } else if (parsedResult.favor.startsWith("-")) {
+                    gameState.characterStatus.favor -= parseInt(parsedResult.favor.substring(1));
+                    logDebug(`好感度減少: ${parsedResult.favor.substring(1)}`);
+                } else {
+                    gameState.characterStatus.favor = parseInt(parsedResult.favor);
+                    logDebug(`好感度設定為: ${gameState.characterStatus.favor}`);
+                }
+                // 限制範圍
+                gameState.characterStatus.favor = Math.max(0, Math.min(100, gameState.characterStatus.favor));
+                logDebug(`好感度最終值: ${gameState.characterStatus.favor}`);
+            }
+            
+            // 更新心情
+            if (parsedResult.mood !== "保持不變") {
+                gameState.characterStatus.mood = parsedResult.mood;
+                logDebug(`心情更新為: ${gameState.characterStatus.mood}`);
+            }
+            
+            // 更新體力
+            if (parsedResult.energy !== "保持不變") {
+                if (parsedResult.energy.startsWith("+")) {
+                    gameState.characterStatus.energy += parseInt(parsedResult.energy.substring(1));
+                    logDebug(`體力增加: ${parsedResult.energy.substring(1)}`);
+                } else if (parsedResult.energy.startsWith("-")) {
+                    gameState.characterStatus.energy -= parseInt(parsedResult.energy.substring(1));
+                    logDebug(`體力減少: ${parsedResult.energy.substring(1)}`);
+                } else {
+                    gameState.characterStatus.energy = parseInt(parsedResult.energy);
+                    logDebug(`體力設定為: ${gameState.characterStatus.energy}`);
+                }
+                // 限制範圍
+                gameState.characterStatus.energy = Math.max(0, Math.min(100, gameState.characterStatus.energy));
+                logDebug(`體力最終值: ${gameState.characterStatus.energy}`);
+            }
+            
+            // 更新精神
+            if (parsedResult.spirit !== "保持不變") {
+                if (parsedResult.spirit.startsWith("+")) {
+                    gameState.characterStatus.spirit += parseInt(parsedResult.spirit.substring(1));
+                    logDebug(`精神增加: ${parsedResult.spirit.substring(1)}`);
+                } else if (parsedResult.spirit.startsWith("-")) {
+                    gameState.characterStatus.spirit -= parseInt(parsedResult.spirit.substring(1));
+                    logDebug(`精神減少: ${parsedResult.spirit.substring(1)}`);
+                } else {
+                    gameState.characterStatus.spirit = parseInt(parsedResult.spirit);
+                    logDebug(`精神設定為: ${gameState.characterStatus.spirit}`);
+                }
+                // 限制範圍
+                gameState.characterStatus.spirit = Math.max(0, Math.min(100, gameState.characterStatus.spirit));
+                logDebug(`精神最終值: ${gameState.characterStatus.spirit}`);
+            }
+            
+            // 更新內心想法
+            if (parsedResult.thoughts) {
+                gameState.characterStatus.thoughts = parsedResult.thoughts;
+                logDebug(`內心想法更新為: ${gameState.characterStatus.thoughts.substring(0, 50)}...`);
+            }
+            
+            // 隨機切換背景和立繪
+            if (gameState.backgroundImages.length > 0) {
+                const randomBgIndex = Math.floor(Math.random() * gameState.backgroundImages.length);
+                gameState.currentBackground = gameState.backgroundImages[randomBgIndex].url;
+                logDebug(`隨機切換背景: ${gameState.backgroundImages[randomBgIndex].name}`);
+            }
+            
+            if (gameState.characterImages.length > 0) {
+                const randomCharIndex = Math.floor(Math.random() * gameState.characterImages.length);
+                gameState.currentCharacterImage = gameState.characterImages[randomCharIndex].url;
+                logDebug(`隨機切換立繪: ${gameState.characterImages[randomCharIndex].name}`);
+            }
+        }
+
+        // 儲存玩家資料
+        function savePlayerData() {
+            gameState.playerData.name = playerName.value;
+            gameState.playerData.setting = playerSetting.value;
+            
+            logDebug(`儲存玩家資料: 名稱=${gameState.playerData.name}, 設定長度=${gameState.playerData.setting.length}`);
+            
+            alert("玩家資料已儲存");
+            
+            // 添加事件記錄
+            addEvent("更新玩家資料", `玩家名稱: ${gameState.playerData.name}`);
+        }
+
+        // 儲存遊戲
+        function saveGame() {
+            logDebug("開始儲存遊戲");
+            
+            // 創建存檔數據
+            const saveData = JSON.stringify(gameState, null, 2);
+            logDebug(`存檔數據大小: ${saveData.length} 字元`);
+            
+            // 創建下載連結
+            const blob = new Blob([saveData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // 創建下載連結元素
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AI文字遊戲_存檔_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 釋放URL對象
+            URL.revokeObjectURL(url);
+            
+            // 顯示狀態
+            showStatus(saveStatus, "遊戲已儲存", "success");
+            setTimeout(() => {
+                saveStatus.classList.add('hidden');
+            }, 3000);
+            
+            // 添加事件記錄
+            addEvent("儲存遊戲", "遊戲進度已儲存至本地檔案");
+            
+            logDebug("遊戲儲存完成");
+        }
+
+        // 添加事件記錄
+        function addEvent(title, content) {
+            const now = new Date();
+            const timestamp = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            gameState.events.unshift({
+                title: title,
+                content: content,
+                timestamp: timestamp
+            });
+            
+            logDebug(`添加事件: ${title}`);
+            
+            updateEventList();
+        }
+
+        // 更新事件列表
+        function updateEventList() {
+            eventList.innerHTML = "";
+            
+            gameState.events.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'event-item';
+                eventItem.innerHTML = `
+                    <div class="event-title">${event.title} <small>(${event.timestamp})</small></div>
+                    <p>${event.content}</p>
+                `;
+                eventList.appendChild(eventItem);
+            });
+            
+            logDebug(`更新事件列表，共 ${gameState.events.length} 個事件`);
+        }
+
+        // 顯示狀態訊息
+        function showStatus(element, message, type) {
+            element.textContent = message;
+            element.className = `status-indicator ${type}`;
+            element.classList.remove('hidden');
+            logDebug(`狀態訊息: ${message} (${type})`);
+        }
+
+        // 調試日誌
+        function logDebug(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}<br>`;
+            debugLog.innerHTML = logEntry + debugLog.innerHTML;
+            
+            // 限制日誌長度
+            if (debugLog.children.length > 50) {
+                debugLog.innerHTML = debugLog.innerHTML.substring(0, 5000);
+            }
+            
+            console.log(`[AI遊戲調試] ${message}`);
+        }
+
+        // 切換調試面板
+        function toggleDebug() {
+            if (debugContent.style.display === 'none') {
+                debugContent.style.display = 'block';
+                logDebug("調試面板展開");
+            } else {
+                debugContent.style.display = 'none';
+                logDebug("調試面板收起");
+            }
+        }
+
+        // 初始化遊戲
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
